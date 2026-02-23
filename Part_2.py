@@ -8,27 +8,30 @@ from bs4 import BeautifulSoup
 
 def getBody(url):
 
-    agents= {
-        "User-Agent": "Mozilla/5.0"
+    agents = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
+    try:
+        response= requests.get(url, headers=agents,timeout=10)
+        response.raise_for_status()
 
-    response= requests.get(url, headers=agents)
-    response.raise_for_status()
+        soup =BeautifulSoup(response.text, "html.parser")
 
-    soup =BeautifulSoup(response.text, "html.parser")
+        if soup.body:
+            text =soup.body.get_text()
+        else:
+            text= ""
 
-    if soup.body:
-        text =soup.body.get_text()
-    else:
-        text= ""
-
-    return text
+        return text
+    except Exception:
+        print("Unable to fetch url")
+        return  None
 
 #Polynomial rolling hash 
-P =53
-MOD = 2**64
 
 def polynomial_hash(word):
+    P =53
+    MOD = 2**64
 
     hash_value= 0
     power =1
@@ -62,10 +65,9 @@ def wordCount(text):
 
 def simHash(word_frequency):
 
-    bit_vector =[]
+    bit_vector =[0]*64
 
-    for i in range(64):
-        bit_vector.append(0)
+    
 
     for word in word_frequency:
 
@@ -107,16 +109,19 @@ def commonBits(hash1, hash2):
 def main():
 
     if len(sys.argv) != 3:
+        print("Invalid input type")
         sys.exit(1)
 
     url1 = sys.argv[1]
     url2 = sys.argv[2]
 
     try:
-        print("Fetching first URLs")
+        print("Fetching  URLs")
         text1=getBody(url1)
         text2=getBody(url2)
-
+        if not text1 or not text2:
+            print("Unable to fetch page")
+            return None
         print("Counting word frequency")
         freq1=wordCount(text1)
         freq2=wordCount(text2)
